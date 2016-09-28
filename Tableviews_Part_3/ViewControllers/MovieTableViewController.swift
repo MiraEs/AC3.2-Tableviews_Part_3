@@ -14,15 +14,15 @@ class MovieTableViewController: UITableViewController {
         case action
         case drama
     }
-  
+    
     internal var movieData: [Movie]?
-
+    
     internal let rawMovieData: [[String : Any]] = movies
     let cellIdentifier: String = "MovieTableViewCell"
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         self.title = "Movies"
         self.tableView.rowHeight = UITableViewAutomaticDimension
         self.tableView.estimatedRowHeight = 200.0
@@ -35,7 +35,7 @@ class MovieTableViewController: UITableViewController {
         }
         movieData = movieContainer
     }
-
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         let menuBarButton: UIBarButtonItem = UIBarButtonItem(image: UIImage(named: "reel"),
@@ -53,9 +53,9 @@ class MovieTableViewController: UITableViewController {
             ]
         }
     }
-
+    
     // MARK: - Table view data source
-
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 3
     }
@@ -73,7 +73,7 @@ class MovieTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
         guard let genre = Genre.init(rawValue: indexPath.section),
             let data = byGenre(genre) else {
-            return cell
+                return cell
         }
         
         if let movieCell: MovieTableViewCell = cell as? MovieTableViewCell {
@@ -146,4 +146,65 @@ class MovieTableViewController: UITableViewController {
         
         return filtered
     }
+    
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // 1. check sender for the cell that was tapped
+        if let tappedMovieCell: MovieTableViewCell = sender as? MovieTableViewCell {
+            
+            // 2. check for the right storyboard segue
+            if segue.identifier == "MovieDetailViewSegue" {
+                
+                // 3. get reference to the destination view controller
+                let movieDetailViewController: MovieDetailViewController = segue.destination as! MovieDetailViewController
+                
+                // 4. get our cell's indexPath
+                let cellIndexPath: IndexPath = self.tableView.indexPath(for: tappedMovieCell)!
+                
+                // 5. get our cell's Movie
+                guard let genre = Genre.init(rawValue: cellIndexPath.section),
+                    let data = byGenre(genre) else {
+                        return
+                }
+                
+                // 6. set the destionation's selectedMovie property
+                let selectedMovie: Movie = data[cellIndexPath.row]
+                movieDetailViewController.selectedMovie = selectedMovie
+                
+                // 7. update our labels & image
+                /* Why doesnt this work?
+                 movieDetailViewController.moviePosterImageView.image = UIImage(named: selectedMovie.poster)
+                 movieDetailViewController.genreLabel.text = "Genre: " + selectedMovie.genre.capitalized
+                 movieDetailViewController.locationLabel.text = "Locations: " + selectedMovie.locations.joined(separator: ", ")
+                 movieDetailViewController.summaryTextLabel.text = selectedMovie.summary
+                 
+                 //because the outlets these are connected to aren't yet instantiated?
+                 */
+                
+            }
+            else if segue.identifier == "MovieCastViewSegue" {
+                let movieCastViewController: MovieCastViewController = segue.destination as! MovieCastViewController
+                let cellIndexPath: IndexPath = self.tableView.indexPath(for: tappedMovieCell)!
+                guard let genre = Genre.init(rawValue: cellIndexPath.section),
+                    let data = byGenre(genre) else {
+                        return
+                }
+                
+                let selectedMovie: Movie = data[cellIndexPath.row]
+                movieCastViewController.selectedMovie = selectedMovie
+            }
+        }
+    }
+    
+    
 }
+
+
+
+
+
+
+
+
+
+
